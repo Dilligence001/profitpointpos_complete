@@ -1,0 +1,3428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profit Point POS V2.0</title>
+
+  <!-- OFFLINE vendor files -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Professional color scheme */
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #3b82f6;
+      --secondary: #64748b;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --dark: #1e293b;
+      --light: #f8fafc;
+      --border: #e2e8f0;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --text-light: #94a3b8;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Enhanced visual styling */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: var(--shadow);
+    }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+      min-height: 100vh;
+    }
+
+    .text-gradient {
+      background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hover-scale {
+      transform: translateZ(0);
+      transition: transform 160ms ease;
+    }
+
+    .hover-scale:hover {
+      transform: scale(1.02);
+    }
+
+    .hover-scale:active {
+      transform: scale(0.99);
+    }
+
+    .modal-overlay {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+    }
+
+    .mono {
+      font-variant-numeric: tabular-nums;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .ring-strong {
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35);
+    }
+
+    .baseline-safe {
+      line-height: 1.3;
+      padding-bottom: 2px;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+      width: 280px;
+      background: var(--dark);
+      color: white;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .sidebar-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #334155;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 1rem 0;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1.5rem;
+      color: #cbd5e1;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-size: 0.875rem;
+      font-weight: 500;
+      position: relative;
+    }
+
+    .nav-item:hover {
+      background: #334155;
+      color: white;
+    }
+
+    .nav-item.active {
+      background: var(--primary);
+      color: white;
+      border-right: 3px solid #60a5fa;
+    }
+
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .sidebar-footer {
+      padding: 1rem;
+      border-top: 1px solid #334155;
+    }
+
+    .main-content {
+      margin-left: 280px;
+      min-height: 100vh;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: #334155;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .user-avatar {
+      width: 2rem;
+      height: 2rem;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Alert styling */
+    .alert-badge {
+      position: absolute;
+      top: -4px;
+      right: 8px;
+      background: var(--danger);
+      color: white;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .low-stock-item {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-left: 4px solid #f59e0b;
+    }
+
+    .expired-item {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      border-left: 4px solid var(--danger);
+    }
+
+    .expiring-soon-item {
+      background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+      border-left: 4px solid #ea580c;
+    }
+
+    /* Enhanced form styling */
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+      line-height: 1.25;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 2.75rem;
+      padding: 0 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 0.375rem;
+      transition: all 0.15s ease;
+      font-size: 0.875rem;
+      background: white;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .form-input-icon {
+      position: relative;
+    }
+
+    .form-input-icon input {
+      padding-left: 2.5rem;
+    }
+
+    .form-input-icon .icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      pointer-events: none;
+    }
+
+    /* Enhanced card styling */
+    .info-card {
+      padding: 1.25rem;
+      border-radius: 0.75rem;
+      background: white;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .info-card-header {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+      line-height: 1.2;
+      color: var(--text-secondary);
+    }
+
+    .info-card-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 0.25rem;
+      color: var(--text-primary);
+    }
+
+    /* Enhanced button styling */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      line-height: 1.25;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    .btn-secondary {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #4b5563;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #047857;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #b91c1c;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-outline:hover {
+      background: var(--light);
+      border-color: var(--text-light);
+      transform: translateY(-1px);
+    }
+
+    /* Enhanced table styling */
+    .data-table {
+      width: 100%;
+      font-size: 0.875rem;
+      border-collapse: collapse;
+    }
+
+    .data-table th {
+      background: var(--light);
+      padding: 0.75rem 0.5rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .data-table th.text-right {
+      text-align: right;
+    }
+
+    .data-table td {
+      padding: 0.75rem 0.5rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .data-table td.text-right {
+      text-align: right;
+    }
+
+    .data-table tbody tr:hover {
+      background: var(--light);
+    }
+
+    /* Enhanced product card styling */
+    .product-card {
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      background: white;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      text-align: center;
+      position: relative;
+    }
+
+    .product-card:hover {
+      border-color: var(--primary);
+      background: #f0f9ff;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .product-card-name {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+      line-height: 1.25;
+      min-height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .product-card-price {
+      background: #dbeafe;
+      color: var(--primary-dark);
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      display: inline-block;
+    }
+
+    .product-card-stock {
+      font-size: 0.625rem;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+
+    .product-card-add-icon {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      width: 1.5rem;
+      height: 1.5rem;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    .product-card:hover .product-card-add-icon {
+      opacity: 1;
+    }
+
+    /* Cart item styling */
+    .cart-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background: white;
+      margin-bottom: 0.5rem;
+      transition: all 0.15s ease;
+    }
+
+    .cart-item:hover {
+      border-color: #cbd5e1;
+      box-shadow: var(--shadow);
+    }
+
+    .cart-item-info {
+      flex: 1;
+      margin-right: 0.75rem;
+    }
+
+    .cart-item-name {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .cart-item-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .qty-input {
+      width: 4rem;
+      height: 2.25rem;
+      padding: 0 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 0.375rem;
+      text-align: center;
+      font-size: 0.875rem;
+    }
+
+    .price-display {
+      width: 6rem;
+      text-align: right;
+      font-family: ui-monospace, monospace;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Toast styling */
+    .toast {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      color: white;
+      font-weight: 600;
+      font-size: 0.875rem;
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(8px);
+      animation: slideUp 0.3s ease;
+    }
+
+    .toast-success {
+      background: linear-gradient(135deg, var(--success) 0%, #047857 100%);
+    }
+
+    .toast-error {
+      background: linear-gradient(135deg, var(--danger) 0%, #b91c1c 100%);
+    }
+
+    .toast-warning {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateX(-50%) translateY(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Login screen styling */
+    .login-screen {
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 50%, var(--dark) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .login-card {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: var(--shadow-lg);
+      padding: 2rem;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .login-logo {
+      width: 4rem;
+      height: 4rem;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+    }
+
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .glass-card {
+        margin: 0.5rem;
+      }
+
+      .product-card {
+        padding: 0.5rem;
+      }
+
+      .cart-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .cart-item-controls {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+
+    /* ABC Analysis Colors */
+    .abc-class-a {
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+      color: #047857;
+    }
+
+    .abc-class-b {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      color: #b45309;
+    }
+
+    .abc-class-c {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      color: #b91c1c;
+    }
+
+    /* Logo preview styling */
+    .logo-preview {
+      width: 80px;
+      height: 80px;
+      border: 1px dashed var(--border);
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0.5rem 0;
+      background: var(--light);
+    }
+
+    .logo-preview img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 0.25rem;
+    }
+
+    /* === Scrollability patch v2 (Sep 26, 2025) ===
+       Goal: make all white/surface screens scroll when content overflows.
+       Targets: main-content, glass-card (your white panels), login-card, and
+       common Tailwind containers used in this file (.flex-1, .overflow-hidden, .bg-white).
+    */
+    html,
+    body,
+    #root {
+      height: 100%;
+    }
+
+    .main-content {
+      min-height: 100vh;
+    }
+
+    /* Scroll inside the big white panels ("glass-card") without changing look */
+    .glass-card {
+      max-height: calc(100vh - 4rem);
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    /* Ensure flex children can scroll within panels */
+    .glass-card .flex-1 {
+      min-height: 0;
+    }
+
+    .glass-card .overflow-hidden {
+      overflow: auto !important;
+    }
+
+    /* Login screen card also scrolls if fields/lists grow */
+    .login-card {
+      max-height: calc(100vh - 4rem);
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Any rounded white surface (cards/screens) can scroll if tall */
+    [class*="bg-white"][class*="rounded"] {
+      max-height: calc(100vh - 4rem);
+      overflow-y: auto;
+    }
+
+    /* Tables inside scrollable cards keep headers visible */
+    .glass-card .data-table thead {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+
+    /* Professional header styling */
+    .page-header {
+      padding: 1.5rem 2rem;
+      background: white;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .page-subtitle {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    /* Status indicators */
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-danger {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .status-info {
+      background: #dbeafe;
+      color: #3730a3;
+    }
+
+    /* Professional dashboard cards */
+    .dashboard-card {
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      background: white;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .dashboard-card-header {
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+      color: var(--text-secondary);
+    }
+
+    .dashboard-card-value {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+
+    .dashboard-card-footer {
+      font-size: 0.75rem;
+      color: var(--text-light);
+    }
+
+    /* Professional action bar */
+    .action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      background: white;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .action-bar-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .action-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* Enhanced search bar */
+    .search-bar {
+      position: relative;
+      width: 100%;
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      background: white;
+      transition: all 0.15s ease;
+    }
+
+    .search-bar input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .search-bar .icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="env,react"
+    data-plugins="proposal-class-properties,proposal-object-rest-spread,proposal-optional-chaining,proposal-nullish-coalescing-operator">
+      const { useState, useEffect, useRef, useMemo } = React;
+
+      /* ---------- Authentication & User Management ---------- */
+      const DEFAULT_USERS = [
+        { id: 1, username: "manager", password: "manager123", name: "Store Manager", role: "manager", created: new Date().toISOString() },
+        { id: 2, username: "admin", password: "admin123", name: "System Administrator", role: "manager", created: new Date().toISOString() },
+        { id: 3, username: "cashier", password: "cashier123", name: "cashier", role: "cashier", created: new Date().toISOString() },
+      ];
+
+      // Default system settings
+      const DEFAULT_SETTINGS = {
+        supermarketName: "Profit Point POS",
+        branch: "Tabata kwaBibi",
+        phone: "0762 059 576",
+        slogan: "We love to save you",
+        logo: null // Will store base64 encoded image
+      };
+
+      // Teller configuration
+      const TELLER_NUMBER = "1";
+
+      /* ---------- Time helpers (monthly files) ---------- */
+      function monthKey(d = new Date()) {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        return `${y}_${m}`;
+      }
+      function prevMonthKey(d = new Date()) {
+        const prev = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+        return monthKey(prev);
+      }
+
+      function formatDate(dateStr) {
+        if (!dateStr) return '';
+        return new Date(dateStr).toLocaleDateString();
+      }
+
+      function isExpired(expirationDate) {
+        if (!expirationDate) return false;
+        return new Date(expirationDate) < new Date();
+      }
+
+      function isExpiringSoon(expirationDate, days = 7) {
+        if (!expirationDate) return false;
+        const expDate = new Date(expirationDate);
+        const warningDate = new Date();
+        warningDate.setDate(warningDate.getDate() + days);
+        return expDate <= warningDate && expDate >= new Date();
+      }
+
+      function getDaysBetween(date1, date2) {
+        const oneDay = 24 * 60 * 60 * 1000;
+        return Math.round((new Date(date1) - new Date(date2)) / oneDay);
+      }
+
+      /* ---------- Products CSV Helpers (Enhanced with new fields) ---------- */
+      function parseProductsCSV(text) {
+        const lines = text.split(/\r?\n/).filter((l) => l.trim());
+        if (lines.length === 0) return [];
+        const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
+        const hIndex = (h) => headers.indexOf(h);
+        const idx = {
+          barcode: hIndex("barcode"),
+          name: hIndex("name"),
+          price: hIndex("price"),
+          buy_price: hIndex("buy_price"),
+          opening_stock: hIndex("opening_stock"),
+          items_sold: hIndex("items_sold"),
+          available_stock: hIndex("available_stock"),
+          reorder_level: hIndex("reorder_level"),
+          expiration_date: hIndex("expiration_date"),
+        };
+        const rows = [];
+        for (let i = 1; i < lines.length; i++) {
+          const cols = splitCSVRow(lines[i]);
+          const row = {
+            barcode: idx.barcode >= 0 ? (cols[idx.barcode] || "").trim() : "",
+            name: idx.name >= 0 ? (cols[idx.name] || "").trim() : "",
+            price: idx.price >= 0 ? Number((cols[idx.price] || "").trim()) : 0,
+            buy_price: idx.buy_price >= 0 ? Number((cols[idx.buy_price] || "").trim()) : 0,
+            opening_stock: idx.opening_stock >= 0 ? Number((cols[idx.opening_stock] || "").trim()) : 0,
+            items_sold: idx.items_sold >= 0 ? Number((cols[idx.items_sold] || "").trim()) : 0,
+            available_stock: idx.available_stock >= 0 ? Number((cols[idx.available_stock] || "").trim()) : 0,
+            reorder_level: idx.reorder_level >= 0 ? Number((cols[idx.reorder_level] || "").trim()) : 0,
+            expiration_date: idx.expiration_date >= 0 ? (cols[idx.expiration_date] || "").trim() : "",
+          };
+          if (row.barcode && row.name) rows.push(row);
+        }
+        return rows;
+      }
+
+      function productsToCSV(rows) {
+        const header = "barcode,name,price,buy_price,opening_stock,items_sold,available_stock,reorder_level,expiration_date";
+        const esc = (v) => {
+          const s = String(v || "");
+          return /[\",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        };
+        const body = rows
+          .map((r) => [
+            esc(r.barcode),
+            esc(r.name),
+            esc(r.price),
+            esc(r.buy_price || 0),
+            esc(r.opening_stock || 0),
+            esc(r.items_sold || 0),
+            esc(r.available_stock || 0),
+            esc(r.reorder_level || 0),
+            esc(r.expiration_date || "")
+          ].join(","))
+          .join("\n");
+        return header + "\n" + body + "\n";
+      }
+
+      /* ---------- Sales CSV (with buy_price & profit & user info) ---------- */
+      function parseSalesCSV(text) {
+        const lines = text.split(/\r?\n/).filter((l) => l.trim());
+        if (lines.length === 0) return [];
+        const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
+        const idxTimestamp = headers.indexOf("timestamp");
+        const idxReceipt = headers.indexOf("receipt_number");
+        const idxTeller = headers.indexOf("teller_number");
+        const idxUser = headers.indexOf("user_name");
+        const idxBarcode = headers.indexOf("barcode");
+        const idxName = headers.indexOf("name");
+        const idxPrice = headers.indexOf("price");
+        const idxQuantity = headers.indexOf("quantity");
+        const idxTotal = headers.indexOf("total");
+        const idxBuy = headers.indexOf("buy_price");
+        const idxProfit = headers.indexOf("profit");
+        const out = [];
+        for (let i = 1; i < lines.length; i++) {
+          const cols = splitCSVRow(lines[i]);
+          const timestamp = idxTimestamp >= 0 ? (cols[idxTimestamp] || "").trim() : "";
+          const receipt = idxReceipt >= 0 ? (cols[idxReceipt] || "").trim() : "";
+          const teller = idxTeller >= 0 ? (cols[idxTeller] || "").trim() : "";
+          const user_name = idxUser >= 0 ? (cols[idxUser] || "").trim() : "";
+          const barcode = idxBarcode >= 0 ? (cols[idxBarcode] || "").trim() : "";
+          const name = idxName >= 0 ? (cols[idxName] || "").trim() : "";
+          const price = idxPrice >= 0 ? Number((cols[idxPrice] || "").trim()) : NaN;
+          const quantity = idxQuantity >= 0 ? Number((cols[idxQuantity] || "").trim()) : NaN;
+          const total = idxTotal >= 0 ? Number((cols[idxTotal] || "").trim()) : NaN;
+          const buy_price = idxBuy >= 0 ? Number((cols[idxBuy] || "").trim()) : 0;
+          const profit = idxProfit >= 0 ? Number((cols[idxProfit] || "").trim()) : (price - buy_price) * quantity;
+          if (timestamp && receipt && teller && barcode && name && !Number.isNaN(price) && !Number.isNaN(quantity) && !Number.isNaN(total)) {
+            out.push({ timestamp, receipt_number: receipt, teller_number: teller, user_name: user_name || "Unknown", barcode, name, price, quantity, total, buy_price, profit });
+          }
+        }
+        return out;
+      }
+
+      function salesToCSV(sales) {
+        const header = "timestamp,receipt_number,teller_number,user_name,barcode,name,price,quantity,total,buy_price,profit";
+        const esc = (v) => {
+          const s = String(v || "");
+          return /[\",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        };
+        const body = sales
+          .map((s) => [
+            esc(s.timestamp), esc(s.receipt_number), esc(s.teller_number), esc(s.user_name || "Unknown"), esc(s.barcode), esc(s.name), esc(s.price), esc(s.quantity), esc(s.total), esc(s.buy_price ?? 0), esc(s.profit ?? ((s.price - (s.buy_price ?? 0)) * s.quantity))
+          ].join(","))
+          .join("\n");
+        return header + "\n" + body + "\n";
+      }
+
+      function splitCSVRow(row) {
+        const result = [];
+        let cur = "";
+        let inQuotes = false;
+        for (let i = 0; i < row.length; i++) {
+          const ch = row[i];
+          if (ch === '"') {
+            if (inQuotes && row[i + 1] === '"') { cur += '"'; i++; }
+            else { inQuotes = !inQuotes; }
+          } else if (ch === ',' && !inQuotes) { result.push(cur); cur = ""; }
+          else { cur += ch; }
+        }
+        result.push(cur);
+        return result;
+      }
+
+      /* ---------- Stock Log CSV (restocking history) ---------- */
+      function parseStockLogCSV(text) {
+        const lines = text.split(/\r?\n/).filter(l => l.trim());
+        if (lines.length === 0) return [];
+        const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
+        const H = n => headers.indexOf(n);
+        const out = [];
+        for (let i = 1; i < lines.length; i++) {
+          const cols = splitCSVRow(lines[i]);
+          const row = {
+            timestamp: (cols[H("timestamp")] || "").trim(),
+            user: (cols[H("user")] || "").trim(),
+            barcode: (cols[H("barcode")] || "").trim(),
+            name: (cols[H("name")] || "").trim(),
+            qty: Number((cols[H("qty")] || "0").trim()),
+            buy_price: Number((cols[H("buy_price")] || "0").trim()),
+          };
+          if (row.timestamp && row.barcode) out.push(row);
+        }
+        return out;
+      }
+
+      function stockLogToCSV(rows) {
+        const header = "timestamp,user,barcode,name,qty,buy_price";
+        const esc = (v) => {
+          const s = String(v ?? "");
+          return /[\",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        };
+        const body = rows.map(r => [
+          esc(r.timestamp), esc(r.user || ""), esc(r.barcode), esc(r.name || ""),
+          esc(r.qty), esc(r.buy_price ?? 0)
+        ].join(",")).join("\n");
+        return header + "\n" + body + "\n";
+      }
+
+      /* ---------- User Management CSV ---------- */
+      function parseUsersCSV(text) {
+        const lines = text.split(/\r?\n/).filter(l => l.trim());
+        if (lines.length === 0) return DEFAULT_USERS;
+        const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
+        const H = n => headers.indexOf(n);
+        const out = [];
+        for (let i = 1; i < lines.length; i++) {
+          const cols = splitCSVRow(lines[i]);
+          const user = {
+            id: Number((cols[H("id")] || "0").trim()),
+            username: (cols[H("username")] || "").trim(),
+            password: (cols[H("password")] || "").trim(),
+            name: (cols[H("name")] || "").trim(),
+            role: (cols[H("role")] || "teller").trim(),
+            created: (cols[H("created")] || new Date().toISOString()).trim(),
+          };
+          if (user.username && user.password) out.push(user);
+        }
+        return out.length > 0 ? out : DEFAULT_USERS;
+      }
+
+      function usersToCSV(users) {
+        const header = "id,username,password,name,role,created";
+        const esc = (v) => {
+          const s = String(v ?? "");
+          return /[\",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        };
+        const body = users.map(u => [
+          esc(u.id), esc(u.username), esc(u.password), esc(u.name), esc(u.role), esc(u.created)
+        ].join(",")).join("\n");
+        return header + "\n" + body + "\n";
+      }
+
+      /* ---------- Icons ---------- */
+      const UserIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="7" r="4" /><path d="M5.5 21a8.38 8.38 0 0 1 13 0" /></svg>);
+      const SalesIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18" /><path d="M19 9l-5 5-4-4-3 3" /></svg>);
+
+      const TrashIcon = () => (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="3 6 5 6 21 6" />
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+          <path d="M10 11v6" /><path d="M14 11v6" />
+          <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+        </svg>
+      );
+      const DownloadIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>);
+      const UploadIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>);
+      const LockIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="10" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>);
+      const BarcodeIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M4 12h16M4 17h16" /></svg>);
+      const CartIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" /></svg>);
+      const PlusIcon = () => (<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>);
+      const AlertIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><path d="M12 9v4" /><path d="m12 17 .01 0" /></svg>);
+      const ClockIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12,6 12,12 16,14" /></svg>);
+      const TrendingUpIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22,7 13.5,15.5 8.5,10.5 2,17" /><polyline points="16,7 22,7 22,13" /></svg>);
+      const UsersIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>);
+      const BarChartIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="20" x2="12" y2="10" /><line x1="18" y1="20" x2="18" y2="4" /><line x1="6" y1="20" x2="6" y2="16" /></svg>);
+      const CalendarIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>);
+      const PackageIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21" /><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27,6.96 12,12.01 20.73,6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></svg>);
+      const SettingsIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>);
+      const LogoutIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16,17 21,12 16,7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>);
+      const StoreIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-4" /></svg>);
+      const ImageIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>);
+      const SearchIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>);
+
+      /* ---------- Sidebar Component ---------- */
+      function Sidebar({ currentUser, onLogout, alerts, currentView, onSelectView, settings }) {
+        const isManager = currentUser?.role === 'manager';
+
+        const navigationItems = [
+          { id: 'pos', label: 'POS System', icon: CartIcon, available: true },
+          { id: 'inventory', label: 'Inventory', icon: PackageIcon, available: isManager, hasAlert: alerts.total > 0 },
+          { id: 'sales', label: 'Sales History', icon: SalesIcon, available: isManager },
+          { id: 'analytics', label: 'Analytics', icon: BarChartIcon, available: isManager },
+          { id: 'users', label: 'User Management', icon: UsersIcon, available: isManager },
+          { id: 'performance', label: 'Performance', icon: TrendingUpIcon, available: isManager },
+          { id: 'settings', label: 'Settings', icon: SettingsIcon, available: isManager },
+        ];
+
+        return (
+          <div className="sidebar">
+            {/* Header */}
+            <div className="sidebar-header">
+              <div className="flex items-center gap-3 mb-4">
+                {settings?.logo ? (
+                  <img src={settings.logo} alt="Logo" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
+                ) : (
+                  <StoreIcon />
+                )}
+                <div>
+                  <h1 className="font-bold text-lg">{settings?.supermarketName?.split(' ')[0] || 'Profit Point'}</h1>
+                  <p className="text-xs text-slate-400">POS System</p>
+                </div>
+              </div>
+
+              {/* User Info */}
+              <div className="user-info">
+                <div className="user-avatar">
+                  <UserIcon />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-sm">{currentUser?.name}</p>
+                  <p className="text-xs text-slate-400">{currentUser?.role}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Navigation */}
+            <nav className="sidebar-nav">
+              {navigationItems.map((item) => {
+                if (!item.available) return null;
+
+                const Icon = item.icon;
+
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => onSelectView(item.id)}
+                    className={`nav-item ${item.id === currentView ? 'active' : ''}`}
+                  >
+                    <Icon />
+                    <span>{item.label}</span>
+                    {item.hasAlert && (
+                      <div className="alert-badge">
+                        {alerts.total > 99 ? '99+' : alerts.total}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Footer */}
+            <div className="sidebar-footer">
+              <button
+                onClick={onLogout}
+                className="nav-item w-full"
+              >
+                <LogoutIcon />
+                <span>Logout</span>
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      /* ---------- Login Screen Component ---------- */
+      function LoginScreen({ users, onLogin, settings }) {
+        const [username, setUsername] = useState("");
+        const [password, setPassword] = useState("");
+        const [loading, setLoading] = useState(false);
+
+        const handleSubmit = async (e) => {
+          e.preventDefault();
+          setLoading(true);
+
+          // Simulate loading for better UX
+          await new Promise(resolve => setTimeout(resolve, 500));
+
+          const user = users.find((u) => u.username === username && u.password === password);
+          if (user) {
+            onLogin(user);
+          } else {
+            alert("Invalid credentials. Please try again.");
+          }
+          setLoading(false);
+        };
+
+        return (
+          <div className="login-screen">
+            <div className="login-card">
+              {/* Header */}
+              <div className="login-header">
+                <div className="login-logo">
+                  {settings?.logo ? (
+                    <img src={settings.logo} alt="Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+                  ) : (
+                    <StoreIcon />
+                  )}
+                </div>
+                <h1 className="text-2xl font-bold text-slate-800 mb-2">{settings?.supermarketName || 'Profit Point POS'}</h1>
+                <p className="text-slate-600">Sign in to access the system</p>
+              </div>
+
+              {/* Login Form */}
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label className="form-label">
+                    Username
+                  </label>
+                  <div className="form-input-icon">
+                    <div className="icon"><UserIcon /></div>
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="form-input"
+                      placeholder="Enter username"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="form-label">
+                    Password
+                  </label>
+                  <div className="form-input-icon">
+                    <div className="icon"><LockIcon /></div>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="form-input"
+                      placeholder="Enter password"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn btn-primary w-full"
+                >
+                  {loading ? 'Signing in...' : 'Sign In'}
+                </button>
+              </form>
+
+
+            </div>
+          </div>
+        );
+      }
+
+      /* ---------- System Settings View ---------- */
+      function SystemSettingsView({ settings, onClose, onSave }) {
+        const [formData, setFormData] = useState({
+          supermarketName: settings?.supermarketName || DEFAULT_SETTINGS.supermarketName,
+          branch: settings?.branch || DEFAULT_SETTINGS.branch,
+          phone: settings?.phone || DEFAULT_SETTINGS.phone,
+          slogan: settings?.slogan || DEFAULT_SETTINGS.slogan,
+          logo: settings?.logo || null
+        });
+        const fileInputRef = useRef(null);
+
+        const handleLogoUpload = (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+
+          if (file.size > 1024 * 1024) { // 1MB limit
+            alert("Logo file must be less than 1MB");
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            setFormData(prev => ({
+              ...prev,
+              logo: event.target.result
+            }));
+          };
+          reader.readAsDataURL(file);
+        };
+
+        const handleSave = () => {
+          if (!formData.supermarketName.trim()) {
+            alert("Supermarket name is required");
+            return;
+          }
+          onSave(formData);
+          onClose();
+        };
+
+        return (
+          <div className="p-8">
+            <div className="glass-card rounded-xl shadow-2xl w-full max-w-2xl mx-auto p-8 overflow-y-auto">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold text-slate-800 mb-2">System Settings</h2>
+                <p className="text-slate-600">Configure your supermarket information and branding</p>
+              </div>
+
+              <div className="space-y-6">
+                {/* Logo Upload */}
+                <div>
+                  <label className="form-label">Supermarket Logo</label>
+                  <div className="flex items-center gap-4">
+                    <div className="logo-preview">
+                      {formData.logo ? (
+                        <img src={formData.logo} alt="Logo preview" />
+                      ) : (
+                        <ImageIcon />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleLogoUpload}
+                        accept="image/*"
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="btn btn-outline"
+                      >
+                        <UploadIcon /> Upload Logo
+                      </button>
+                      {formData.logo && (
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, logo: null }))}
+                          className="btn btn-outline ml-2"
+                        >
+                          Remove
+                        </button>
+                      )}
+                      <p className="text-xs text-slate-500 mt-1">Maximum file size: 1MB. Supports PNG, JPG, GIF</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Supermarket Name */}
+                <div>
+                  <label className="form-label">Supermarket Name *</label>
+                  <input
+                    type="text"
+                    value={formData.supermarketName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, supermarketName: e.target.value }))}
+                    className="form-input"
+                    placeholder="Enter supermarket name"
+                    required
+                  />
+                </div>
+
+                {/* Branch */}
+                <div>
+                  <label className="form-label">Branch Location</label>
+                  <input
+                    type="text"
+                    value={formData.branch}
+                    onChange={(e) => setFormData(prev => ({ ...prev, branch: e.target.value }))}
+                    className="form-input"
+                    placeholder="Enter branch location"
+                  />
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label className="form-label">Phone Number</label>
+                  <input
+                    type="text"
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    className="form-input"
+                    placeholder="Enter phone number"
+                  />
+                </div>
+
+                {/* Slogan */}
+                <div>
+                  <label className="form-label">Slogan</label>
+                  <input
+                    type="text"
+                    value={formData.slogan}
+                    onChange={(e) => setFormData(prev => ({ ...prev, slogan: e.target.value }))}
+                    className="form-input"
+                    placeholder="Enter company slogan"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mt-8">
+                <button onClick={onClose} className="btn btn-outline">
+                  Cancel
+                </button>
+                <button onClick={handleSave} className="btn btn-success">
+                  Save Settings
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      /* ---------- Add Product Modal (Enhanced) ---------- */
+      function AddProductModal({ initialBarcode, onCancel, onSave }) {
+        const [barcode, setBarcode] = useState(initialBarcode || "");
+        const [name, setName] = useState("");
+        const [price, setPrice] = useState("");
+        const [buyPrice, setBuyPrice] = useState("");
+        const [opening, setOpening] = useState("");
+        const [available, setAvailable] = useState(0);
+        const [reorderLevel, setReorderLevel] = useState("");
+        const [expirationDate, setExpirationDate] = useState("");
+
+        useEffect(() => { setAvailable(Number(opening) || 0); }, [opening]);
+
+        const valid = barcode.trim() && name.trim() && !Number.isNaN(Number(price)) && Number(price) >= 0 && !Number.isNaN(Number(opening)) && Number(opening) >= 0 && !Number.isNaN(Number(buyPrice)) && Number(buyPrice) >= 0;
+
+        return (
+          <div className="fixed inset-0 modal-overlay flex items-center justify-center p-4 z-50">
+            <div className="glass-card rounded-xl shadow-2xl w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold text-slate-800 mb-2">Add New Product</h2>
+                <p className="text-slate-600">Enter product details, pricing, and stock information</p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="form-label">Barcode *</label>
+                  <input
+                    value={barcode}
+                    onChange={(e) => setBarcode(e.target.value)}
+                    className="form-input"
+                    placeholder="e.g., 621234567890"
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">Product Name *</label>
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="form-input"
+                    placeholder="Enter product name"
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">Selling Price (TSH) *</label>
+                  <input
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className="form-input"
+                    placeholder="e.g., 2500"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">Buying Price (TSH) *</label>
+                  <input
+                    value={buyPrice}
+                    onChange={(e) => setBuyPrice(e.target.value)}
+                    className="form-input"
+                    placeholder="e.g., 1800"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">Opening Stock *</label>
+                  <input
+                    value={opening}
+                    onChange={(e) => setOpening(e.target.value)}
+                    className="form-input"
+                    placeholder="e.g., 24"
+                    type="number"
+                    min="0"
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">Reorder Level</label>
+                  <input
+                    value={reorderLevel}
+                    onChange={(e) => setReorderLevel(e.target.value)}
+                    className="form-input"
+                    placeholder="e.g., 10"
+                    type="number"
+                    min="0"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Alert when stock falls below this level</p>
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="form-label">Expiration Date (if applicable)</label>
+                  <input
+                    value={expirationDate}
+                    onChange={(e) => setExpirationDate(e.target.value)}
+                    className="form-input"
+                    type="date"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Leave blank for non-perishable items</p>
+                </div>
+              </div>
+
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <p className="text-xs text-blue-800">
+                  <strong>Note:</strong> Available stock will start at opening value. Items sold increment automatically during checkout.
+                  Reorder level helps track when to restock items. Expiration dates help manage perishable inventory.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mt-8">
+                <button onClick={onCancel} className="btn btn-outline">
+                  Cancel
+                </button>
+                <button
+                  onClick={() => onSave({
+                    barcode: barcode.trim(),
+                    name: name.trim(),
+                    price: Number(price),
+                    buy_price: Number(buyPrice),
+                    opening_stock: Number(opening),
+                    items_sold: 0,
+                    available_stock: Number(opening),
+                    reorder_level: Number(reorderLevel) || 0,
+                    expiration_date: expirationDate || ""
+                  })}
+                  disabled={!valid}
+                  className={`btn ${valid ? 'btn-success' : 'btn-outline opacity-50 cursor-not-allowed'}`}
+                >
+                  Save Product
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      /* ---------- User Management View ---------- */
+      function UserManagementView({ users, onClose, onSave, currentUser }) {
+        const [userList, setUserList] = useState(users);
+        const [showAdd, setShowAdd] = useState(false);
+        const [editingUser, setEditingUser] = useState(null);
+        const [newUser, setNewUser] = useState({ username: "", password: "", name: "", role: "teller" });
+
+        const addUser = () => {
+          if (!newUser.username || !newUser.password || !newUser.name) {
+            alert("Please fill all required fields");
+            return;
+          }
+
+          if (userList.find(u => u.username === newUser.username)) {
+            alert("Username already exists");
+            return;
+          }
+
+          const user = {
+            id: Math.max(...userList.map(u => u.id), 0) + 1,
+            ...newUser,
+            created: new Date().toISOString()
+          };
+
+          const updated = [...userList, user];
+          setUserList(updated);
+          onSave(updated);
+          setNewUser({ username: "", password: "", name: "", role: "teller" });
+          setShowAdd(false);
+        };
+
+        const updateUser = (id, updates) => {
+          const updated = userList.map(u => u.id === id ? { ...u, ...updates } : u);
+          setUserList(updated);
+          onSave(updated);
+          setEditingUser(null);
+        };
+
+        const deleteUser = (id) => {
+          if (id === currentUser.id) {
+            alert("Cannot delete your own account");
+            return;
+          }
+          if (!confirm("Are you sure you want to delete this user?")) return;
+          const updated = userList.filter(u => u.id !== id);
+          setUserList(updated);
+          onSave(updated);
+        };
+
+        return (
+          <div className="p-8">
+            <div className="glass-card rounded-xl shadow-2xl w-full max-w-4xl mx-auto p-6 overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-800">User Management</h2>
+                  <p className="text-slate-600">Manage system users and their access</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setShowAdd(true)} className="btn btn-primary">
+                    <PlusIcon /> Add User
+                  </button>
+                  <button onClick={onClose} className="btn btn-outline">
+                    Back to POS
+                  </button>
+                </div>
+              </div>
+
+              {showAdd && (
+                <div className="mb-6 p-4 border border-slate-200 rounded-lg bg-slate-50">
+                  <h3 className="font-semibold mb-4">Add New User</h3>
+                  <div className="grid md:grid-cols-4 gap-4">
+                    <input
+                      value={newUser.username}
+                      onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                      className="form-input"
+                      placeholder="Username"
+                    />
+                    <input
+                      value={newUser.password}
+                      onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                      className="form-input"
+                      placeholder="Password"
+                      type="password"
+                    />
+                    <input
+                      value={newUser.name}
+                      onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                      className="form-input"
+                      placeholder="Full Name"
+                    />
+                    <select
+                      value={newUser.role}
+                      onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                      className="form-input"
+                    >
+                      <option value="teller">Cashier</option>
+                      <option value="manager">Manager</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-3 mt-4">
+                    <button onClick={addUser} className="btn btn-success">Save</button>
+                    <button onClick={() => setShowAdd(false)} className="btn btn-outline">Cancel</button>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex-1 overflow-hidden">
+                <div className="overflow-y-auto h-full">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {userList.map((user) => (
+                        <tr key={user.id}>
+                          <td>{user.id}</td>
+                          <td>{user.username}</td>
+                          <td>
+                            {editingUser === user.id ? (
+                              <input
+                                defaultValue={user.name}
+                                className="form-input"
+                                onBlur={(e) => updateUser(user.id, { name: e.target.value })}
+                              />
+                            ) : (
+                              user.name
+                            )}
+                          </td>
+                          <td>
+                            {editingUser === user.id ? (
+                              <select
+                                defaultValue={user.role}
+                                className="form-input"
+                                onChange={(e) => updateUser(user.id, { role: e.target.value })}
+                              >
+                                <option value="teller">Cashier</option>
+                                <option value="manager">Manager</option>
+                              </select>
+                            ) : (
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${user.role === 'manager' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                                }`}>
+                                {user.role}
+                              </span>
+                            )}
+                          </td>
+                          <td>{formatDate(user.created)}</td>
+                          <td>
+                            <div className="flex items-center gap-2">
+                              {editingUser === user.id ? (
+                                <button onClick={() => setEditingUser(null)} className="btn btn-outline text-xs px-2 py-1">Done</button>
+                              ) : (
+                                <button onClick={() => setEditingUser(user.id)} className="btn btn-secondary text-xs px-2 py-1">Edit</button>
+                              )}
+                              <button
+                                onClick={() => {
+                                  const newPassword = prompt("Enter new password:");
+                                  if (newPassword) updateUser(user.id, { password: newPassword });
+                                }}
+                                className="btn btn-primary text-xs px-2 py-1"
+                              >
+                                Reset Password
+                              </button>
+                              {user.id !== currentUser.id && (
+                                <button onClick={() => deleteUser(user.id)} className="btn btn-danger text-xs px-2 py-1">Delete</button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      /* ---------- Sales History View (Enhanced with Reporting) ---------- */
+      function SalesHistoryView({ sales, products, onClose, onDownload, onOpenAnalytics }) {
+        // -- Deletion by range (day/month/year/custom) --
+        const handleDeleteRange = () => {
+          let from, to;
+          const now = new Date();
+          switch (reportType) {
+            case "daily":
+              from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+              to = new Date(from.getTime() + 24 * 60 * 60 * 1000);
+              break;
+            case "monthly":
+              from = new Date(now.getFullYear(), now.getMonth(), 1);
+              to = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+              break;
+            case "yearly":
+              from = new Date(now.getFullYear(), 0, 1);
+              to = new Date(now.getFullYear() + 1, 0, 1);
+              break;
+            case "custom":
+              if (!startDate || !endDate) {
+                alert("Please select start and end dates first.");
+                return;
+              }
+              from = new Date(startDate + "T00:00:00");
+              to = new Date(endDate + "T23:59:59");
+              break;
+            default:
+              alert("Choose a range type (Daily/Monthly/Yearly/Custom) first.");
+              return;
+          }
+          if (!from || !to) return;
+          const ok = confirm(
+            `This will permanently delete ALL sales between\\n${from.toLocaleString()} and ${to.toLocaleString()}.\\n\\nContinue?`
+          );
+          if (!ok) return;
+          window.dispatchEvent(new CustomEvent("pos:deleteSalesRange", { detail: { from, to } }));
+        };
+
+        const [reportType, setReportType] = useState("all");
+        const [startDate, setStartDate] = useState("");
+        const [endDate, setEndDate] = useState("");
+
+        const productsMap = useMemo(() => new Map(products.map(p => [p.barcode, p])), [products]);
+
+        const filteredSales = useMemo(() => {
+          const now = new Date();
+          let from, to;
+
+          switch (reportType) {
+            case "daily":
+              from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+              to = new Date(from.getTime() + 24 * 60 * 60 * 1000);
+              break;
+            case "weekly":
+              from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+              to = now;
+              break;
+            case "monthly":
+              from = new Date(now.getFullYear(), now.getMonth(), 1);
+              to = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+              break;
+            case "yearly":
+              from = new Date(now.getFullYear(), 0, 1);
+              to = new Date(now.getFullYear() + 1, 0, 0);
+              break;
+            case "custom":
+              from = startDate ? new Date(startDate) : new Date(0);
+              to = endDate ? new Date(endDate + "T23:59:59") : new Date();
+              break;
+            default:
+              return sales;
+          }
+
+          return sales.filter(s => {
+            const date = new Date(s.timestamp);
+            return date >= from && date <= to;
+          });
+        }, [sales, reportType, startDate, endDate]);
+
+        const totalRevenue = useMemo(() => filteredSales.reduce((sum, sale) => sum + sale.total, 0), [filteredSales]);
+        const totalItems = useMemo(() => filteredSales.reduce((sum, sale) => sum + sale.quantity, 0), [filteredSales]);
+        const totalProfit = useMemo(() => filteredSales.reduce((sum, s) => {
+          const buyP = Number.isFinite(s.buy_price) ? s.buy_price : (productsMap.get(s.barcode)?.buy_price || 0);
+          return sum + (s.price - buyP) * s.quantity;
+        }, 0), [filteredSales, productsMap]);
+
+        return (
+          <div className="p-8">
+            <div className="glass-card rounded-xl shadow-2xl w-full max-w-7xl mx-auto p-6 overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-800">Sales History & Reports</h2>
+                  <p className="text-slate-600">Transaction history, profit analysis, and reporting</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button onClick={onOpenAnalytics} className="btn btn-secondary">
+                    <SalesIcon /> Analytics
+                  </button>
+                  <button onClick={onDownload} className="btn btn-primary">
+                    <DownloadIcon /> Download CSV
+                  </button>
+                  <button onClick={handleDeleteRange} className="btn btn-danger">
+                    <TrashIcon /> Delete In Range
+                  </button>
+                  <button onClick={onClose} className="btn btn-outline">
+                    Back to POS
+                  </button>
+                </div>
+              </div>
+
+              {/* Report Controls */}
+              <div className="flex flex-wrap items-center gap-4 mb-6">
+                <select
+                  value={reportType}
+                  onChange={(e) => setReportType(e.target.value)}
+                  className="form-input w-auto"
+                >
+                  <option value="all">All Time</option>
+                  <option value="daily">Today</option>
+                  <option value="weekly">Last 7 Days</option>
+                  <option value="monthly">This Month</option>
+                  <option value="yearly">This Year</option>
+                  <option value="custom">Custom Range</option>
+                </select>
+
+                {reportType === "custom" && (
+                  <>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="form-input w-auto"
+                    />
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="form-input w-auto"
+                    />
+                  </>
+                )}
+
+                <div className="text-sm text-slate-600">
+                  Showing {filteredSales.length.toLocaleString()} transactions
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-4 gap-4 mb-6">
+                <div className="dashboard-card">
+                  <div className="dashboard-card-header">Total Revenue</div>
+                  <div className="dashboard-card-value">TSH {totalRevenue.toLocaleString()}</div>
+                  <div className="dashboard-card-footer">All time sales revenue</div>
+                </div>
+                <div className="dashboard-card">
+                  <div className="dashboard-card-header">Items Sold</div>
+                  <div className="dashboard-card-value">{totalItems.toLocaleString()}</div>
+                  <div className="dashboard-card-footer">Total units sold</div>
+                </div>
+                <div className="dashboard-card">
+                  <div className="dashboard-card-header">Total Profit</div>
+                  <div className="dashboard-card-value">TSH {totalProfit.toLocaleString()}</div>
+                  <div className="dashboard-card-footer">Net profit after costs</div>
+                </div>
+                <div className="dashboard-card">
+                  <div className="dashboard-card-header">Profit Margin</div>
+                  <div className="dashboard-card-value">
+                    {totalRevenue > 0 ? (totalProfit / totalRevenue * 100).toFixed(1) : 0}%
+                  </div>
+                  <div className="dashboard-card-footer">Profit as percentage of revenue</div>
+                </div>
+              </div>
+
+              {/* Sales History Table */}
+              <div className="flex-1 overflow-hidden">
+                <h3 className="text-lg font-semibold mb-4">Transaction Details</h3>
+                {filteredSales.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-slate-500">
+                    <div className="text-center">
+                      <p className="text-lg mb-2">No sales recorded for selected period</p>
+                      <p className="text-sm">Try selecting a different date range</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="overflow-y-auto h-full">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Receipt #</th>
+                          <th>User</th>
+                          <th>Date & Time</th>
+                          <th>Barcode</th>
+                          <th>Product</th>
+                          <th className="text-right">Qty</th>
+                          <th className="text-right">Price</th>
+                          <th className="text-right">Total</th>
+                          <th className="text-right">Buy Price</th>
+                          <th className="text-right">Profit</th>
+                          <th className="text-right">Margin</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredSales.map((s, i) => {
+                          const buyPrice = Number.isFinite(s.buy_price) ? s.buy_price : (productsMap.get(s.barcode)?.buy_price || 0);
+                          const profit = s.profit ?? ((s.price - buyPrice) * s.quantity);
+                          const margin = s.total > 0 ? (profit / s.total * 100) : 0;
+
+                          return (
+                            <tr key={i}>
+                              <td style={{ fontFamily: 'ui-monospace, monospace' }}>{s.receipt_number}</td>
+                              <td>{s.user_name || "Unknown"}</td>
+                              <td>{new Date(s.timestamp).toLocaleString()}</td>
+                              <td style={{ fontFamily: 'ui-monospace, monospace' }}>{s.barcode}</td>
+                              <td>{s.name}</td>
+                              <td className="text-right">{s.quantity}</td>
+                              <td className="text-right">TSH {s.price.toLocaleString()}</td>
+                              <td className="text-right">TSH {s.total.toLocaleString()}</td>
+                              <td className="text-right">TSH {buyPrice.toLocaleString()}</td>
+                              <td className="text-right">TSH {profit.toLocaleString()}</td>
+                              <td className="text-right">
+                                <span className={`font-medium ${margin > 50 ? 'text-green-600' :
+                                  margin > 25 ? 'text-yellow-600' : 'text-red-600'
+                                  }`}>
+                                  {margin.toFixed(1)}%
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      /* ---------- Analytics View ---------- */
+      function AnalyticsView({ sales, products, onClose }) {
+        const productsMap = useMemo(() => new Map(products.map(p => [p.barcode, p])), [products]);
+
+        const totalRevenue = useMemo(() => sales.reduce((sum, sale) => sum + sale.total, 0), [sales]);
+        const totalItems = useMemo(() => sales.reduce((sum, sale) => sum + sale.quantity, 0), [sales]);
+        const totalProfit = useMemo(() => sales.reduce((sum, s) => {
+          const buyP = Number.isFinite(s.buy_price) ? s.buy_price : (productsMap.get(s.barcode)?.buy_price || 0);
+          return sum + (s.price - buyP) * s.quantity;
+        }, 0), [sales, productsMap]);
+
+        const metrics = useMemo(() => {
+          const m = new Map();
+          for (const s of sales) {
+            const k = s.barcode;
+            if (!m.has(k)) m.set(k, { barcode: s.barcode, name: s.name, qty: 0, rev: 0, profit: 0 });
+            const buyP = Number.isFinite(s.buy_price) ? s.buy_price : (productsMap.get(s.barcode)?.buy_price || 0);
+            const row = m.get(k);
+            row.qty += s.quantity;
+            row.rev += s.total;
+            row.profit += (s.price - buyP) * s.quantity;
+          }
+          return Array.from(m.values()).sort((a, b) => b.rev - a.rev);
+        }, [sales, productsMap]);
+
+        const withStock = useMemo(() => {
+          const pm = new Map(products.map(p => [p.barcode, p]));
+          return metrics.map(r => {
+            const p = pm.get(r.barcode) || {};
+            const opening = Number(p.opening_stock) || 0;
+            const sold = r.qty;
+            const available = Number(p.available_stock) || 0;
+            const drr = sold > 0 ? (sold / Math.max(1, opening + sold)) * 30 : 0;
+            const projDaysLeft = drr > 0 ? (available / (drr / 30)) : Infinity;
+            const avgPrice = (r.rev / Math.max(1, r.qty));
+            return { ...r, opening, available, drr, projDaysLeft, avgPrice, turnover: r.rev, margin: r.profit };
+          });
+        }, [metrics, products]);
+
+        // Top selling products
+        const topProducts = withStock.slice(0, 10);
+
+        // ABC Analysis - categorize products by revenue contribution
+        const totalSalesRevenue = withStock.reduce((sum, p) => sum + p.rev, 0);
+        const abcAnalysis = useMemo(() => {
+          let cumulativeRev = 0;
+          return withStock.map(p => {
+            cumulativeRev += p.rev;
+            const cumulative = (cumulativeRev / totalSalesRevenue) * 100;
+            const abcClass = cumulative <= 70 ? 'A' : cumulative <= 90 ? 'B' : 'C';
+            return { ...p, cumulative, abcClass };
+          });
+        }, [withStock, totalSalesRevenue]);
+
+        const abcSummary = useMemo(() => {
+          const summary = { A: 0, B: 0, C: 0 };
+          abcAnalysis.forEach(p => summary[p.abcClass]++);
+          return summary;
+        }, [abcAnalysis]);
+
+        return (
+          <div className="p-8">
+            <div className="glass-card rounded-xl shadow-2xl w-full max-w-7xl mx-auto p-6 overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-800">Analytics Dashboard</h2>
+                  <p className="text-slate-600">Comprehensive sales and inventory analysis</p>
+                </div>
+                <button onClick={onClose} className="btn btn-outline">
+                  Back to POS
+                </button>
+              </div>
+
+              {/* Summary Cards */}
+              <div className="grid md:grid-cols-4 gap-6 mb-8">
+                <div className="dashboard-card">
+                  <div className="dashboard-card-header">Total Revenue</div>
+                  <div className="dashboard-card-value">TSH {totalRevenue.toLocaleString()}</div>
+                  <div className="dashboard-card-footer">All time sales revenue</div>
+                </div>
+                <div className="dashboard-card">
+                  <div className="dashboard-card-header">Items Sold</div>
+                  <div className="dashboard-card-value">{totalItems.toLocaleString()}</div>
+                  <div className="dashboard-card-footer">Total units sold</div>
+                </div>
+                <div className="dashboard-card">
+                  <div className="dashboard-card-header">Total Profit</div>
+                  <div className="dashboard-card-value">TSH {totalProfit.toLocaleString()}</div>
+                  <div className="dashboard-card-footer">Net profit after costs</div>
+                </div>
+                <div className="dashboard-card">
+                  <div className="dashboard-card-header">Avg Margin</div>
+                  <div className="dashboard-card-value">
+                    {totalRevenue > 0 ? (totalProfit / totalRevenue * 100).toFixed(1) : 0}%
+                  </div>
+                  <div className="dashboard-card-footer">Profit as percentage of revenue</div>
+                </div>
+              </div>
+
+              {/* ABC Analysis Summary */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-4">ABC Analysis Summary</h3>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="p-4 rounded-lg abc-class-a">
+                    <div className="font-semibold">Class A Products</div>
+                    <div className="text-2xl font-bold">{abcSummary.A}</div>
+                    <div className="text-sm">High Value (70% of revenue)</div>
+                  </div>
+                  <div className="p-4 rounded-lg abc-class-b">
+                    <div className="font-semibold">Class B Products</div>
+                    <div className="text-2xl font-bold">{abcSummary.B}</div>
+                    <div className="text-sm">Medium Value (20% of revenue)</div>
+                  </div>
+                  <div className="p-4 rounded-lg abc-class-c">
+                    <div className="font-semibold">Class C Products</div>
+                    <div className="text-2xl font-bold">{abcSummary.C}</div>
+                    <div className="text-sm">Low Value (10% of revenue)</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detailed Analysis Table */}
+              <div className="flex-1 overflow-hidden">
+                <h3 className="text-lg font-semibold mb-4">Product Performance Analysis</h3>
+                <div className="overflow-y-auto h-full">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>ABC</th>
+                        <th>Barcode</th>
+                        <th>Product Name</th>
+                        <th className="text-right">Qty Sold</th>
+                        <th className="text-right">Revenue</th>
+                        <th className="text-right">Profit</th>
+                        <th className="text-right">Avg Price</th>
+                        <th className="text-right">Opening</th>
+                        <th className="text-right">Available</th>
+                        <th className="text-right">Profit Margin</th>
+                        <th className="text-right">Days Left</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {abcAnalysis.map((r) => (
+                        <tr key={r.barcode}>
+                          <td>
+                            <span className={`px-2 py-1 rounded font-bold text-xs abc-class-${r.abcClass.toLowerCase()}`}>
+                              {r.abcClass}
+                            </span>
+                          </td>
+                          <td style={{ fontFamily: 'ui-monospace, monospace' }}>{r.barcode}</td>
+                          <td>{r.name}</td>
+                          <td className="text-right">{r.qty.toLocaleString()}</td>
+                          <td className="text-right">TSH {r.rev.toLocaleString()}</td>
+                          <td className="text-right">TSH {r.profit.toLocaleString()}</td>
+                          <td className="text-right">TSH {r.avgPrice.toFixed(0)}</td>
+                          <td className="text-right">{r.opening.toLocaleString()}</td>
+                          <td className="text-right">{r.available.toLocaleString()}</td>
+                          <td className="text-right">
+                            <span className={`font-medium ${(r.profit / r.rev) > 0.5 ? 'text-green-600' :
+                              (r.profit / r.rev) > 0.25 ? 'text-yellow-600' : 'text-red-600'
+                              }`}>
+                              {((r.profit / r.rev) * 100).toFixed(1)}%
+                            </span>
+                          </td>
+                          <td className="text-right">{Number.isFinite(r.projDaysLeft) ? r.projDaysLeft.toFixed(1) : "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>ABC Analysis:</strong> Class A products (70% of revenue) require tight inventory control.
+                  Class B products (20% of revenue) need moderate control.
+                  Class C products (10% of revenue) can have simple controls.
+                  Focus on high-margin Class A products for maximum profitability.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      /* ---------- Performance View ---------- */
+      function PerformanceView({ sales, users, onClose }) {
+        const userMap = useMemo(() => new Map(users.map(u => [u.name, u])), [users]);
+
+        const performance = useMemo(() => {
+          const m = new Map();
+          for (const s of sales) {
+            const user = s.user_name || "Unknown";
+            if (!m.has(user)) m.set(user, { user, revenue: 0, profit: 0, items: 0, transactions: new Set() });
+            const row = m.get(user);
+            row.revenue += s.total;
+            row.profit += s.profit || 0;
+            row.items += s.quantity;
+            row.transactions.add(s.receipt_number);
+          }
+          return Array.from(m.values()).map(p => ({
+            ...p,
+            transactions: p.transactions.size,
+            avgTransaction: p.transactions.size > 0 ? p.revenue / p.transactions.size : 0,
+            role: userMap.get(p.user)?.role || 'unknown'
+          })).sort((a, b) => b.revenue - a.revenue);
+        }, [sales, userMap]);
+
+        return (
+          <div className="p-8">
+            <div className="glass-card rounded-xl shadow-2xl w-full max-w-7xl mx-auto p-6 overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-800">Performance Dashboard</h2>
+                  <p className="text-slate-600">Sales performance by team member</p>
+                </div>
+                <button onClick={onClose} className="btn btn-outline">
+                  Back to POS
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-hidden">
+                <div className="overflow-y-auto h-full">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th className="text-right">Revenue</th>
+                        <th className="text-right">Profit</th>
+                        <th className="text-right">Items Sold</th>
+                        <th className="text-right">Transactions</th>
+                        <th className="text-right">Avg Transaction</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {performance.map((p, i) => (
+                        <tr key={i}>
+                          <td>{p.user}</td>
+                          <td>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${p.role === 'manager' ? 'bg-blue-100 text-blue-800' :
+                              p.role === 'teller' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                              }`}>
+                              {p.role}
+                            </span>
+                          </td>
+                          <td className="text-right">TSH {p.revenue.toLocaleString()}</td>
+                          <td className="text-right">TSH {p.profit.toLocaleString()}</td>
+                          <td className="text-right">{p.items.toLocaleString()}</td>
+                          <td className="text-right">{p.transactions.toLocaleString()}</td>
+                          <td className="text-right">TSH {p.avgTransaction.toFixed(0)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      /* ---------- Inventory View (Enhanced) ---------- */
+      function InventoryView({ products, onClose, onDeleteSelected, onDeleteAll, onAddProduct, onLoadCSV, onDownloadCSV }) {
+        const [query, setQuery] = React.useState("");
+        const [checked, setChecked] = React.useState(new Set());
+        const fileInputRef = useRef(null);
+
+        const filtered = React.useMemo(() => {
+          const q = query.toLowerCase();
+          return products.filter(p =>
+            (p.name || "").toLowerCase().includes(q) || String(p.barcode || "").includes(q)
+          );
+        }, [products, query]);
+
+        const totals = React.useMemo(() => {
+          const toNum = n => Number(n) || 0;
+          let stockValue = 0, retailValue = 0, potentialProfit = 0, lowStockCount = 0, expiredCount = 0, expiringSoonCount = 0;
+          for (const p of filtered) {
+            const qty = toNum(p.available_stock);
+            const buy = toNum(p.buy_price);
+            const sell = toNum(p.price);
+            const reorderLevel = toNum(p.reorder_level);
+
+            stockValue += buy * qty;
+            retailValue += sell * qty;
+            potentialProfit += (sell - buy) * qty;
+
+            if (qty <= reorderLevel && reorderLevel > 0) lowStockCount++;
+            if (p.expiration_date && isExpired(p.expiration_date)) expiredCount++;
+            if (p.expiration_date && isExpiringSoon(p.expiration_date)) expiringSoonCount++;
+          }
+          return { stockValue, retailValue, potentialProfit, lowStockCount, expiredCount, expiringSoonCount };
+        }, [filtered]);
+
+        function toggle(bc) {
+          const next = new Set(checked);
+          next.has(bc) ? next.delete(bc) : next.add(bc);
+          setChecked(next);
+        }
+
+        function getRowClass(product) {
+          if (product.expiration_date && isExpired(product.expiration_date)) {
+            return "expired-item";
+          }
+          if (product.expiration_date && isExpiringSoon(product.expiration_date)) {
+            return "expiring-soon-item";
+          }
+          if (Number(product.available_stock) <= Number(product.reorder_level) && Number(product.reorder_level) > 0) {
+            return "low-stock-item";
+          }
+          return "";
+        }
+
+        return (
+          <div className="p-8">
+            <div className="glass-card rounded-xl shadow-2xl w-full max-w-7xl mx-auto p-6 overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-800">Inventory Management</h2>
+                  <p className="text-slate-600">Stock levels, valuations, and alerts</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => fileInputRef.current?.click()} className="btn btn-secondary">
+                    <UploadIcon /> Load CSV
+                  </button>
+                  <input
+                    type="file"
+                    accept=".csv"
+                    className="hidden"
+                    ref={fileInputRef}
+                    onChange={onLoadCSV}
+                  />
+                  <button onClick={onAddProduct} className="btn btn-primary">
+                    <PlusIcon /> Add Product
+                  </button>
+                  <button onClick={onDownloadCSV} className="btn btn-outline">
+                    <DownloadIcon /> Download CSV
+                  </button>
+                  <button onClick={onClose} className="btn btn-outline">
+                    Back to POS
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-6 gap-4 mb-6">
+                <div className="dashboard-card">
+                  <div className="dashboard-card-header">Stock Value</div>
+                  <div className="dashboard-card-value">TSH {totals.stockValue.toLocaleString()}</div>
+                  <div className="dashboard-card-footer">Cost value of inventory</div>
+                </div>
+                <div className="dashboard-card">
+                  <div className="dashboard-card-header">Retail Value</div>
+                  <div className="dashboard-card-value">TSH {totals.retailValue.toLocaleString()}</div>
+                  <div className="dashboard-card-footer">Selling value of inventory</div>
+                </div>
+                <div className="dashboard-card">
+                  <div className="dashboard-card-header">Potential Profit</div>
+                  <div className="dashboard-card-value">TSH {totals.potentialProfit.toLocaleString()}</div>
+                  <div className="dashboard-card-footer">Profit if all items sold</div>
+                </div>
+                <div className="dashboard-card">
+                  <div className="dashboard-card-header">Low Stock</div>
+                  <div className="dashboard-card-value">{totals.lowStockCount}</div>
+                  <div className="dashboard-card-footer">Items below reorder level</div>
+                </div>
+                <div className="dashboard-card">
+                  <div className="dashboard-card-header">Expired</div>
+                  <div className="dashboard-card-value">{totals.expiredCount}</div>
+                  <div className="dashboard-card-footer">Expired items</div>
+                </div>
+                <div className="dashboard-card">
+                  <div className="dashboard-card-header">Expiring Soon</div>
+                  <div className="dashboard-card-value">{totals.expiringSoonCount}</div>
+                  <div className="dashboard-card-footer">Items expiring within 7 days</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 mb-4">
+                <div className="search-bar flex-1">
+                  <div className="icon"><SearchIcon /></div>
+                  <input
+                    placeholder="Search by product name or barcode…"
+                    value={query}
+                    onChange={e => setQuery(e.target.value)}
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    if (checked.size === 0) return alert("Please select items to delete.");
+                    if (!confirm(`Delete ${checked.size} selected product(s)? This affects the current month file only.`)) return;
+                    onDeleteSelected(Array.from(checked));
+                    setChecked(new Set());
+                  }}
+                  className="btn btn-danger">
+                  Delete Selected ({checked.size})
+                </button>
+                <button
+                  onClick={() => {
+                    if (!confirm("Delete ALL products from the current month file? This cannot be undone.")) return;
+                    onDeleteAll();
+                  }}
+                  className="btn btn-outline text-red-700 border-red-300 hover:bg-red-50">
+                  Delete All
+                </button>
+              </div>
+
+              <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+                <div className="flex items-center gap-6 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded bg-red-200 border-l-4 border-red-500"></div>
+                    <span>Expired Items</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded bg-orange-200 border-l-4 border-orange-500"></div>
+                    <span>Expiring Soon</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded bg-yellow-200 border-l-4 border-yellow-500"></div>
+                    <span>Low Stock</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-hidden">
+                <div className="overflow-y-auto h-full">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th className="w-12">
+                          <input
+                            type="checkbox"
+                            onChange={e => {
+                              if (e.target.checked) setChecked(new Set(filtered.map(p => p.barcode)));
+                              else setChecked(new Set());
+                            }}
+                          />
+                        </th>
+                        <th>Barcode</th>
+                        <th>Product Name</th>
+                        <th className="text-right">Buy Price</th>
+                        <th className="text-right">Sell Price</th>
+                        <th className="text-right">Available</th>
+                        <th className="text-right">Reorder Level</th>
+                        <th>Expiration Date</th>
+                        <th className="text-right">Stock Value</th>
+                        <th className="text-right">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map(p => {
+                        const qty = Number(p.available_stock) || 0;
+                        const buy = Number(p.buy_price) || 0;
+                        const sell = Number(p.price) || 0;
+                        const reorderLevel = Number(p.reorder_level) || 0;
+                        const rowClass = getRowClass(p);
+
+                        return (
+                          <tr key={p.barcode} className={rowClass}>
+                            <td className="text-center">
+                              <input
+                                type="checkbox"
+                                checked={checked.has(p.barcode)}
+                                onChange={() => toggle(p.barcode)}
+                              />
+                            </td>
+                            <td style={{ fontFamily: 'ui-monospace, monospace' }}>{p.barcode}</td>
+                            <td>{p.name}</td>
+                            <td className="text-right">TSH {buy.toLocaleString()}</td>
+                            <td className="text-right">TSH {sell.toLocaleString()}</td>
+                            <td className="text-right">{qty.toLocaleString()}</td>
+                            <td className="text-right">{reorderLevel > 0 ? reorderLevel.toLocaleString() : "—"}</td>
+                            <td>{p.expiration_date ? formatDate(p.expiration_date) : "—"}</td>
+                            <td className="text-right">TSH {(buy * qty).toLocaleString()}</td>
+                            <td className="text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                {p.expiration_date && isExpired(p.expiration_date) && (
+                                  <span className="status-indicator status-danger">Expired</span>
+                                )}
+                                {p.expiration_date && isExpiringSoon(p.expiration_date) && !isExpired(p.expiration_date) && (
+                                  <span className="status-indicator status-warning">Expiring</span>
+                                )}
+                                {qty <= reorderLevel && reorderLevel > 0 && (
+                                  <span className="status-indicator status-warning">Low Stock</span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      /* ---------- Receipt Modal ---------- */
+      function Receipt({ receiptNumber, teller, timestampDisp, items, cart, total, onClose, userName, settings }) {
+        return (
+          <div className="fixed inset-0 modal-overlay flex items-center justify-center p-4 z-50">
+            <div className="glass-card rounded-xl shadow-2xl w-full max-w-md p-8">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-slate-800 mb-1">Receipt #{receiptNumber}</h2>
+                <div className="text-slate-600 text-sm">
+                  {timestampDisp} • Teller {teller}
+                </div>
+                {userName && (
+                  <div className="text-slate-500 text-xs mt-1">
+                    Served by: {userName}
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-white border rounded-lg p-4 mb-6 shadow-inner">
+                <div className="space-y-2">
+                  {cart.map((c, i) => (
+                    <div key={i} className="flex justify-between text-sm py-1">
+                      <span className="flex-1">{c.name} × {c.qty}</span>
+                      <span className="mono font-semibold">TSH {(c.price * c.qty).toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="border-t-2 border-dashed border-slate-300 mt-3 pt-3">
+                  <div className="flex justify-between font-bold text-lg">
+                    <span>Total</span>
+                    <span className="mono">TSH {total.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <button onClick={onClose} className="btn btn-outline">
+                  Close
+                </button>
+                <button onClick={() => printReceiptAuto(items, userName, settings)} className="btn btn-primary">
+                  Print Receipt
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      /* ---------- Print helpers ---------- */
+      function buildReceiptHTML(items, userName, settings = DEFAULT_SETTINGS) {
+        // Compute totals and current date/time
+        const total = items.reduce((s, i) => s + (Number(i.qty) || 0) * (Number(i.price) || 0), 0);
+        const rows = items.map(i => {
+          const qty = Number(i.qty) || 0;
+          const price = Number(i.price) || 0;
+          const line = qty * price;
+          const safeName = String(i.name ?? "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          return `<tr>
+      <td class="desc">${safeName}</td>
+      <td class="qty" style="text-align:right">${qty}</td>
+      <td class="price" style="text-align:right">TSH ${price.toLocaleString()}</td>
+      <td class="total" style="text-align:right">TSH ${line.toLocaleString()}</td>
+    </tr>`;
+        }).join("");
+        const now = new Date();
+        const datetimeStr = now.toLocaleString();
+
+        const logoTag = settings.logo ? `<img src="${settings.logo}" class="logo" alt="Logo">` : '';
+
+        // HTML document for the popup/print
+        return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Receipt</title>
+  <style>
+    body{
+      font:14px/1.4 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+      padding:16px;
+      max-width:300px;
+      color:#000;
+    }
+    h1{font-size:18px;margin:0 0 8px;text-align:center}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{padding:4px 0;border-bottom:1px dashed #999;text-align:left}
+    thead th{font-weight:700}
+    tfoot td{font-weight:700;border-top:2px solid #000}
+    /* Force 12px for item description, quantity, price, total */
+    table, table th, table td, .desc, .qty, .price, .total { font-size:12px !important; }
+    /* Center small info lines */
+    .meta{ text-align:center; margin:4px 0; font-size:12px; }
+    /* Logo */
+    .logo{ display:block; margin:0 auto 6px auto; width:72px; height:auto; }
+  </style>
+</head>
+<body>
+  ${logoTag}
+  <h1>${settings.supermarketName}</h1>
+  <p class="meta">Date &amp; Time: ${datetimeStr}</p>
+  <p class="meta">${settings.branch}</p>
+  <p class="meta">Mobile: ${settings.phone}</p>
+  ${userName ? `<p class="meta">Served by: ${userName}</p>` : ''}
+
+  <table>
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th style="text-align:right">Qty</th>
+        <th style="text-align:right">Price</th>
+        <th style="text-align:right">Total</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3">Grand Total</td>
+        <td style="text-align:right">TSH ${total.toLocaleString()}</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <p class="meta">"${settings.slogan}"</p>
+</body>
+</html>`;
+      }
+
+      function printReceiptAuto(items, userName, settings) {
+        const w = window.open("", "_blank", "width=400,height=600");
+        const html = buildReceiptHTML(items, userName, settings);
+        w.document.open();
+        w.document.write(html);
+        w.document.close();
+        w.focus();
+        setTimeout(() => {
+          w.print();
+          w.close();
+        }, 500);
+      }
+
+      /* ---------- Toast Component ---------- */
+      function Toast({ message, type, onClose }) {
+        useEffect(() => {
+          const timer = setTimeout(onClose, 4000);
+          return () => clearTimeout(timer);
+        }, [onClose]);
+
+        const bgColor = type === 'success' ? 'toast-success' : type === 'error' ? 'toast-error' : 'toast-warning';
+
+        return (
+          <div className={`toast ${bgColor}`}>
+            <div className="flex items-center gap-2">
+              {type === 'success' && <div className="w-2 h-2 bg-green-300 rounded-full"></div>}
+              {type === 'error' && <AlertIcon />}
+              {type === 'warning' && <ClockIcon />}
+              <span className="font-medium">{message}</span>
+              <button onClick={onClose} className="ml-2 hover:bg-white/20 rounded p-1">
+                ×
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      /* ---------- Main Application ---------- */
+      function POSSystem() {
+        // Global event listener to delete sales by date range
+        useEffect(() => {
+          const handler = (e) => {
+            try {
+              const { from, to } = e.detail || {};
+              if (!from || !to) return;
+              setSales((prev) => {
+                const next = prev.filter((s) => {
+                  const d = new Date(s.timestamp);
+                  return !(d >= from && d <= to);
+                });
+                setSalesCsvURLFromRows(next);
+                return next;
+              });
+              showToast(`Sales deleted for selected range.`, "success");
+            } catch (_) {
+              showToast("Failed to delete sales for range", "error");
+            }
+          };
+          window.addEventListener("pos:deleteSalesRange", handler);
+          return () => window.removeEventListener("pos:deleteSalesRange", handler);
+        }, []);
+
+        const [currentUser, setCurrentUser] = useState(null);
+        const [users, setUsers] = useState(DEFAULT_USERS);
+        const [products, setProducts] = useState([]);
+        const [sales, setSales] = useState([]);
+        const [cart, setCart] = useState([]);
+        const [receiptNumber, setReceiptNumber] = useState(1001);
+        const [toast, setToast] = useState(null);
+        const [barcode, setBarcode] = useState("");
+        const [showAdd, setShowAdd] = useState(false);
+        const [pendingBarcode, setPendingBarcode] = useState("");
+        const [showReceipt, setShowReceipt] = useState(false);
+        const [receiptItems, setReceiptItems] = useState([]);
+        const [currentView, setCurrentView] = useState('pos');
+        const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+        const [csvURL, setCsvURL] = useState(null);
+        const [csvFileName, setCsvFileName] = useState(`products_${monthKey()}.csv`);
+        const barcodeInputRef = useRef(null);
+
+        // Calculate alerts
+        const alerts = useMemo(() => {
+          let lowStock = 0, expired = 0, expiring = 0;
+
+          products.forEach(p => {
+            const qty = Number(p.available_stock) || 0;
+            const reorderLevel = Number(p.reorder_level) || 0;
+
+            if (qty <= reorderLevel && reorderLevel > 0) lowStock++;
+            if (p.expiration_date && isExpired(p.expiration_date)) expired++;
+            if (p.expiration_date && isExpiringSoon(p.expiration_date) && !isExpired(p.expiration_date)) expiring++;
+          });
+
+          return { lowStock, expired, expiring, total: lowStock + expired + expiring };
+        }, [products]);
+
+        const isManager = currentUser?.role === 'manager';
+
+        // Auto-focus barcode input
+        useEffect(() => {
+          if (barcodeInputRef.current && currentView === 'pos') {
+            barcodeInputRef.current.focus();
+          }
+        }, [currentView]);
+
+        // Load data on startup
+        useEffect(() => {
+          // Load system settings
+          const savedSettings = localStorage.getItem("pos_settings");
+          if (savedSettings) {
+            try {
+              const parsed = JSON.parse(savedSettings);
+              setSettings({ ...DEFAULT_SETTINGS, ...parsed });
+            } catch (_) { }
+          }
+
+          // Load users
+          const savedUsers = localStorage.getItem("pos_users_csv");
+          if (savedUsers) {
+            try {
+              const parsed = parseUsersCSV(savedUsers);
+              setUsers(parsed);
+            } catch (_) { }
+          }
+
+          // Load current user session
+          const savedUser = localStorage.getItem("pos_current_user");
+          if (savedUser) {
+            try {
+              const u = JSON.parse(savedUser);
+              setCurrentUser(u);
+            } catch (_) { }
+          }
+
+          // Load products
+          const nowKey = monthKey();
+          const savedProducts = localStorage.getItem(`pos_products_csv_${nowKey}`);
+          if (savedProducts) {
+            try {
+              const rows = parseProductsCSV(savedProducts);
+              setProducts(rows);
+              setCsvURLFromRows(rows, nowKey);
+            } catch (_) { }
+          }
+
+          // Load sales
+          const savedSales = localStorage.getItem("pos_sales_csv");
+          if (savedSales) {
+            try {
+              const parsed = parseSalesCSV(savedSales);
+              setSales(parsed);
+            } catch (_) { }
+          }
+
+          // Load receipt counter
+          const savedReceipt = localStorage.getItem("pos_receipt_counter");
+          if (savedReceipt) setReceiptNumber(parseInt(savedReceipt, 10) || 1001);
+        }, []);
+
+        const showToast = (message, type = "success") => {
+          setToast({ message, type });
+        };
+
+        const handleLogin = (user) => {
+          setCurrentUser(user);
+          localStorage.setItem("pos_current_user", JSON.stringify(user));
+          showToast(`Welcome, ${user.name}`, "success");
+        };
+
+        const handleLogout = () => {
+          setCurrentUser(null);
+          localStorage.removeItem("pos_current_user");
+          showToast("Logged out successfully", "success");
+        };
+
+        const handleSaveSettings = (newSettings) => {
+          setSettings(newSettings);
+          localStorage.setItem("pos_settings", JSON.stringify(newSettings));
+          showToast("Settings saved successfully", "success");
+        };
+
+        // Products map for quick lookup
+        const productsMap = useMemo(() => {
+          const m = new Map();
+          for (const r of products) m.set(r.barcode, r);
+          return m;
+        }, [products]);
+
+        // CSV persistence helpers
+        function setCsvURLFromRows(rows, key = monthKey()) {
+          const csv = productsToCSV(rows);
+          localStorage.setItem(`pos_products_csv_${key}`, csv);
+          const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+          if (csvURL) URL.revokeObjectURL(csvURL);
+          setCsvURL(url);
+        }
+
+        function setSalesCsvURLFromRows(rows) {
+          const csv = salesToCSV(rows);
+          localStorage.setItem("pos_sales_csv", csv);
+        }
+
+        function persistUsers(userList) {
+          const csv = usersToCSV(userList);
+          localStorage.setItem("pos_users_csv", csv);
+          setUsers(userList);
+        }
+
+        // Load CSV file
+        function onOpenCSV(e) {
+          const f = e.target.files?.[0];
+          if (!f) return;
+
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            try {
+              const rows = parseProductsCSV(String(ev.target.result || ""));
+              setProducts(rows);
+              setCsvURLFromRows(rows);
+              setCsvFileName(f.name);
+              showToast(`Loaded ${rows.length} products successfully`, "success");
+            } catch (err) {
+              alert("Invalid CSV format: " + err?.message);
+            }
+          };
+          reader.readAsText(f);
+          e.target.value = "";
+        }
+
+        // Add/Update product
+        function addOrUpdateProduct(p) {
+          setProducts((prev) => {
+            const idx = prev.findIndex((x) => x.barcode === p.barcode);
+            let next;
+            if (idx >= 0) {
+              next = [...prev];
+              next[idx] = { ...prev[idx], ...p };
+            } else {
+              next = [...prev, p];
+            }
+            setCsvURLFromRows(next);
+            return next;
+          });
+          setShowAdd(false);
+          showToast("Product saved successfully", "success");
+        }
+
+        // Add to cart by barcode
+        function addToCartByBarcode(bc) {
+          const p = productsMap.get(bc);
+          if (!p) {
+            setPendingBarcode(bc);
+            setShowAdd(true);
+            return;
+          }
+
+          if (Number(p.available_stock || 0) <= 0) {
+            showToast(`${p.name} is out of stock`, "error");
+            return;
+          }
+
+          // Check if expired
+          if (p.expiration_date && isExpired(p.expiration_date)) {
+            showToast(`${p.name} has expired (${formatDate(p.expiration_date)})`, "error");
+            return;
+          }
+
+          // Warn if expiring soon
+          if (p.expiration_date && isExpiringSoon(p.expiration_date)) {
+            showToast(`${p.name} expires on ${formatDate(p.expiration_date)}`, "warning");
+          }
+
+          setCart((prev) => {
+            const idx = prev.findIndex((x) => x.barcode === bc);
+            if (idx >= 0) {
+              const next = [...prev];
+              const newQty = next[idx].qty + 1;
+              if (newQty > Number(p.available_stock || 0)) {
+                showToast(`Only ${p.available_stock} units available`, "error");
+                return prev;
+              }
+              next[idx] = { ...next[idx], qty: newQty };
+              return next;
+            }
+            return [...prev, {
+              barcode: p.barcode,
+              name: p.name,
+              price: Number(p.price) || 0,
+              qty: 1
+            }];
+          });
+          showToast(`${p.name} added to cart`, "success");
+        }
+
+        function updateQuantity(bc, q) {
+          const qty = Math.max(1, Number(q) || 1);
+          const p = productsMap.get(bc);
+
+          if (p && qty > Number(p.available_stock || 0)) {
+            showToast(`Only ${p.available_stock} units available`, "error");
+            return;
+          }
+
+          setCart((prev) => prev.map((x) => x.barcode === bc ? { ...x, qty } : x));
+        }
+
+        function removeItem(bc) {
+          setCart((prev) => prev.filter((x) => x.barcode !== bc));
+        }
+
+        function clearCart() {
+          setCart([]);
+          showToast("Cart cleared", "success");
+        }
+
+        function getTotalAmount() {
+          return cart.reduce((s, i) => s + i.qty * i.price, 0);
+        }
+
+        function handleProcessPayment() {
+          if (cart.length === 0) {
+            showToast("Cart is empty", "error");
+            return;
+          }
+
+          if (!currentUser) {
+            showToast("Please login to process payments", "error");
+            return;
+          }
+
+          // Check stock availability and expiration
+          for (const item of cart) {
+            const p = productsMap.get(item.barcode);
+            if (!p || Number(p.available_stock || 0) < item.qty) {
+              showToast(`Insufficient stock for ${item.name}`, "error");
+              return;
+            }
+
+            if (p.expiration_date && isExpired(p.expiration_date)) {
+              showToast(`Cannot sell expired product: ${item.name}`, "error");
+              return;
+            }
+          }
+
+          const total = getTotalAmount();
+          const timestampISO = new Date().toISOString();
+          const currentReceipt = receiptNumber;
+
+          // Build per-item sales + persist
+          const newSales = cart.map((item) => {
+            const prod = productsMap.get(item.barcode) || {};
+            const buyP = Number(prod.buy_price) || 0;
+            return {
+              timestamp: timestampISO,
+              receipt_number: currentReceipt,
+              teller_number: TELLER_NUMBER,
+              user_name: currentUser.name,
+              barcode: item.barcode,
+              name: item.name,
+              price: item.price,
+              quantity: item.qty,
+              total: item.price * item.qty,
+              buy_price: buyP,
+              profit: (item.price - buyP) * item.qty,
+            };
+          });
+
+          setSales((prev) => {
+            const updatedSales = [...prev, ...newSales];
+            setSalesCsvURLFromRows(updatedSales);
+            return updatedSales;
+          });
+
+          setProducts((prev) => {
+            const next = prev.map((p) => ({ ...p }));
+            for (const it of cart) {
+              const idx = next.findIndex((x) => x.barcode === it.barcode);
+              if (idx >= 0) {
+                next[idx].items_sold = Number(next[idx].items_sold) || 0;
+                next[idx].available_stock = Number(next[idx].available_stock) || 0;
+                next[idx].items_sold += it.qty;
+                next[idx].available_stock = Math.max(0, next[idx].available_stock - it.qty);
+              }
+            }
+            setCsvURLFromRows(next);
+            return next;
+          });
+
+          // Store items for receipt and show receipt
+          const items = cart.map((i) => ({ name: i.name, qty: i.qty, price: i.price }));
+          setReceiptItems(items);
+          setShowReceipt(true);
+          setCart([]);
+          setReceiptNumber(currentReceipt + 1);
+          localStorage.setItem("pos_receipt_counter", String(currentReceipt + 1));
+
+          showToast(`Payment processed: TSH ${total.toLocaleString()}`, "success");
+        }
+
+        // Inventory delete handlers
+        function deleteSelectedProducts(barcodes) {
+          setProducts(prev => {
+            const next = prev.filter(p => !barcodes.includes(p.barcode));
+            setCsvURLFromRows(next);
+            return next;
+          });
+          showToast(`${barcodes.length} products deleted`, "success");
+        }
+
+        function deleteAllProducts() {
+          setProducts(() => {
+            const next = [];
+            setCsvURLFromRows(next);
+            return next;
+          });
+          showToast("All products deleted from current month", "success");
+        }
+
+        // Barcode submit handler
+        function handleBarcodeSubmit(e) {
+          e.preventDefault();
+          if (!barcode.trim()) return;
+          addToCartByBarcode(barcode.trim());
+          setBarcode("");
+          // Refocus input
+          setTimeout(() => {
+            if (barcodeInputRef.current) {
+              barcodeInputRef.current.focus();
+            }
+          }, 100);
+        }
+
+        function handleDownloadSales() {
+          const csv = salesToCSV(sales);
+          const blob = new Blob([csv], { type: "text/csv" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `sales_${new Date().toISOString().split('T')[0]}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }
+
+        function handleDownloadProducts() {
+          const csv = productsToCSV(products);
+          const blob = new Blob([csv], { type: "text/csv" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = csvFileName || `products_${monthKey()}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }
+
+        function closeReceipt() {
+          setShowReceipt(false);
+        }
+
+        // Filter products with alerts for display
+        const getProductAlertClass = (p) => {
+          if (p.expiration_date && isExpired(p.expiration_date)) {
+            return "expired-item";
+          }
+          if (p.expiration_date && isExpiringSoon(p.expiration_date)) {
+            return "expiring-soon-item";
+          }
+          if (Number(p.available_stock) <= Number(p.reorder_level) && Number(p.reorder_level) > 0) {
+            return "low-stock-item";
+          }
+          return "";
+        };
+
+        // Show login screen if not logged in
+        if (!currentUser) {
+          return <LoginScreen users={users} onLogin={handleLogin} settings={settings} />;
+        }
+
+        return (
+          <div className="min-h-screen gradient-bg flex">
+            {/* Sidebar */}
+            <Sidebar
+              currentUser={currentUser}
+              onLogout={handleLogout}
+              alerts={alerts}
+              currentView={currentView}
+              onSelectView={setCurrentView}
+              settings={settings}
+            />
+
+            {/* Main Content */}
+            <div className="main-content">
+              {currentView === 'pos' && (
+                <div>
+                  {/* Page Header */}
+                  <div className="page-header">
+                    <h1 className="page-title">Point of Sale</h1>
+                    <p className="page-subtitle">Scan barcodes or select products to add to cart</p>
+                  </div>
+
+                  <div className="px-8 pb-8">
+                    {/* Alert Banner */}
+                    {alerts.total > 0 && (
+                      <div className="mb-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <AlertIcon />
+                            <div>
+                              <h3 className="font-semibold text-yellow-800">Inventory Alerts</h3>
+                              <p className="text-sm text-yellow-700">
+                                {alerts.lowStock > 0 && `${alerts.lowStock} low stock`}
+                                {alerts.expired > 0 && (alerts.lowStock > 0 ? `, ${alerts.expired} expired` : `${alerts.expired} expired`)}
+                                {alerts.expiring > 0 && (alerts.lowStock > 0 || alerts.expired > 0 ? `, ${alerts.expiring} expiring soon` : `${alerts.expiring} expiring soon`)}
+                              </p>
+                            </div>
+                          </div>
+                          <button onClick={() => setCurrentView('inventory')} className="btn btn-outline btn-sm">
+                            View Details
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Main POS Interface */}
+                    <div className="grid lg:grid-cols-3 gap-8">
+                      {/* Left Panel - Barcode Scanner & Products */}
+                      <div className="lg:col-span-2 space-y-8">
+                        {/* Barcode Scanner */}
+                        <div className="glass-card rounded-xl shadow-lg p-6 hover-scale">
+                          <div className="flex items-center gap-3 text-slate-700 mb-6">
+                            <BarcodeIcon />
+                            <h3 className="text-xl font-semibold">Barcode Scanner</h3>
+                          </div>
+                          <form onSubmit={handleBarcodeSubmit} className="flex gap-4">
+                            <input
+                              ref={barcodeInputRef}
+                              value={barcode}
+                              onChange={(e) => setBarcode(e.target.value)}
+                              placeholder="Scan or type barcode to add to cart"
+                              className="form-input flex-1 text-lg h-14"
+                            />
+                            <button type="submit" className="btn btn-primary px-6 h-14 text-lg">
+                              <CartIcon />
+                            </button>
+                          </form>
+                          {barcode && !productsMap.has(barcode.trim()) && (
+                            <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                              <p className="text-sm text-amber-800">
+                                <strong>Product not found.</strong> Press the cart icon to create a new product with this barcode.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Quick Access Products */}
+                        <div className="glass-card rounded-xl shadow-lg p-6">
+                          <h3 className="text-xl font-semibold text-slate-700 mb-6">Quick Access Products</h3>
+                          {products.length === 0 ? (
+                            <div className="text-center py-12 text-slate-500">
+                              <p className="text-lg mb-2">No products available</p>
+                              <p className="text-sm">
+                                {isManager ? "Use the inventory management to load products." : "Contact manager to load products."}
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                              {products.slice(0, 12).map((p) => {
+                                const alertClass = getProductAlertClass(p);
+                                const isAlert = alertClass !== "";
+
+                                return (
+                                  <div
+                                    key={p.barcode}
+                                    className={`product-card ${alertClass}`}
+                                    onClick={() => addToCartByBarcode(p.barcode)}
+                                  >
+                                    <div className="product-card-name">{p.name}</div>
+                                    <div className="product-card-price">TSH {Number(p.price).toLocaleString()}</div>
+                                    <div className="product-card-stock">
+                                      Stock: {Number(p.available_stock || 0).toLocaleString()}
+                                      {p.expiration_date && (
+                                        <div className="text-xs mt-1">
+                                          Exp: {formatDate(p.expiration_date)}
+                                        </div>
+                                      )}
+                                    </div>
+                                    {isAlert && (
+                                      <div className="absolute top-1 left-1">
+                                        <AlertIcon />
+                                      </div>
+                                    )}
+                                    <div className="product-card-add-icon">
+                                      <PlusIcon />
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Right Panel - Cart */}
+                      <div className="space-y-8">
+                        <div className="glass-card rounded-xl shadow-lg p-6">
+                          <h3 className="text-xl font-semibold text-slate-700 mb-6">Shopping Cart</h3>
+
+                          {cart.length === 0 ? (
+                            <div className="text-center py-12 text-slate-500">
+                              <div className="mb-4">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto opacity-50">
+                                  <circle cx="9" cy="21" r="1" />
+                                  <circle cx="20" cy="21" r="1" />
+                                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                                </svg>
+                              </div>
+                              <p className="text-lg mb-2">Cart is empty</p>
+                              <p className="text-sm">Scan or select products to add them to cart</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-4">
+                              {cart.map((item) => (
+                                <div key={item.barcode} className="cart-item">
+                                  <div className="cart-item-info">
+                                    <div className="cart-item-name">{item.name}</div>
+                                  </div>
+                                  <div className="cart-item-controls">
+                                    <input
+                                      type="number"
+                                      value={item.qty}
+                                      min="1"
+                                      onChange={(e) => updateQuantity(item.barcode, e.target.value)}
+                                      className="qty-input"
+                                    />
+                                    <div className="price-display">TSH {item.price.toLocaleString()}</div>
+                                    <button onClick={() => removeItem(item.barcode)} className="btn btn-outline px-3 py-1 text-sm">
+                                      Remove
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {cart.length > 0 && (
+                            <>
+                              <div className="flex items-center justify-between mt-6 pt-4 border-t-2 border-slate-200">
+                                <div className="text-slate-600">
+                                  <span className="font-medium">Items: {cart.reduce((s, i) => s + i.qty, 0)}</span>
+                                </div>
+                                <div className="text-2xl font-bold mono text-slate-800">
+                                  Total: TSH {getTotalAmount().toLocaleString()}
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-4 mt-6">
+                                <button onClick={clearCart} className="btn btn-outline">
+                                  Clear Cart
+                                </button>
+                                <button onClick={handleProcessPayment} className="btn btn-success">
+                                  Process Payment
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {currentView === 'inventory' && (
+                <InventoryView
+                  products={products}
+                  onDeleteSelected={deleteSelectedProducts}
+                  onDeleteAll={deleteAllProducts}
+                  onAddProduct={() => { setPendingBarcode(""); setShowAdd(true); }}
+                  onLoadCSV={onOpenCSV}
+                  onDownloadCSV={handleDownloadProducts}
+                  onClose={() => setCurrentView('pos')}
+                />
+              )}
+
+              {currentView === 'sales' && (
+                <SalesHistoryView
+                  sales={sales}
+                  products={products}
+                  onDownload={handleDownloadSales}
+                  onOpenAnalytics={() => setCurrentView('analytics')}
+                  onClose={() => setCurrentView('pos')}
+                />
+              )}
+
+              {currentView === 'analytics' && (
+                <AnalyticsView
+                  sales={sales}
+                  products={products}
+                  onClose={() => setCurrentView('pos')}
+                />
+              )}
+
+              {currentView === 'users' && (
+                <UserManagementView
+                  users={users}
+                  currentUser={currentUser}
+                  onSave={persistUsers}
+                  onClose={() => setCurrentView('pos')}
+                />
+              )}
+
+              {currentView === 'performance' && (
+                <PerformanceView
+                  sales={sales}
+                  users={users}
+                  onClose={() => setCurrentView('pos')}
+                />
+              )}
+
+              {currentView === 'settings' && (
+                <SystemSettingsView
+                  settings={settings}
+                  onSave={handleSaveSettings}
+                  onClose={() => setCurrentView('pos')}
+                />
+              )}
+            </div>
+
+            {/* Remaining Pop-up Modals */}
+            {showAdd && (
+              <AddProductModal
+                initialBarcode={pendingBarcode}
+                onCancel={() => setShowAdd(false)}
+                onSave={addOrUpdateProduct}
+              />
+            )}
+            {showReceipt && (
+              <Receipt
+                receiptNumber={receiptNumber - 1}
+                teller={TELLER_NUMBER}
+                timestampDisp={new Date().toLocaleString()}
+                items={receiptItems}
+                cart={cart.length > 0 ? cart : receiptItems.map(i => ({ name: i.name, qty: i.qty, price: i.price }))}
+                total={receiptItems.reduce((s, i) => s + i.qty * i.price, 0)}
+                onClose={closeReceipt}
+                userName={currentUser?.name}
+                settings={settings}
+              />
+            )}
+
+            {/* Toast Notifications */}
+            {toast && (
+              <Toast
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast(null)}
+              />
+            )}
+          </div>
+        );
+      }
+
+      // Render the application
+      ReactDOM.render(<POSSystem />, document.getElementById('root'));
+    </script>
+</body>
+
+</html>
